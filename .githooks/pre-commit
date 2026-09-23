@@ -1,0 +1,4 @@
+#!/bin/sh
+# ASK AI VIDEO STUDIO pre-commit security check.
+# Enable once per clone with:  npm run setup-hooks
+exec node scripts/secret-scan.js --staged

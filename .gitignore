@@ -1,0 +1,96 @@
+# ============================================================
+# ASK AI VIDEO STUDIO — defensive .gitignore
+# This repository may be PUBLIC. Never commit private data.
+# Private runtime data lives OUTSIDE this repo (PRIVATE_STORAGE_ROOT).
+# These rules are a second line of defence, not the only one.
+# ============================================================
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+*.gpg
+secrets/
+secret/
+private/
+credentials/
+*credentials*.json
+service-account*.json
+
+# --- Private runtime (must never be inside the repo, but just in case) ---
+private-runtime/
+.private-runtime/
+runtime/
+data/
+database/
+db/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.dump
+*.sql.gz
+*.bak
+
+# --- User / generated media ---
+uploads/
+media/
+generated/
+generated-images/
+generated-videos/
+audio/
+exports/
+thumbnails/
+projects-data/
+temp/
+tmp/
+*.tmp
+logs/
+*.log
+backups/
+backup/
+
+# --- Browser / Google sessions ---
+browser-profiles/
+chrome-profile/
+chromium-profile/
+user-data-dir/
+google-sessions/
+sessions/
+cookies/
+cookies.txt
+*.cookies
+storage-state*.json
+auth-state*.json
+flow-lab-reports/
+
+# --- Dependencies / build ---
+node_modules/
+dist/
+build/
+.cache/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini

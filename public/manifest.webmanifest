@@ -1,0 +1,9 @@
+{
+  "name": "ASK AI Video Studio",
+  "short_name": "AI Studio",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07080d",
+  "theme_color": "#07080d",
+  "icons": [{ "src": "/img/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

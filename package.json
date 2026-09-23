@@ -1,0 +1,23 @@
+{
+  "name": "ask-ai-video-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-assisted video production studio — Phase 1 secure foundation.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "worker": "node --disable-warning=ExperimentalWarning src/jobs/worker-cli.js",
+    "migrate": "node --disable-warning=ExperimentalWarning scripts/migrate.js",
+    "create-user": "node --disable-warning=ExperimentalWarning scripts/create-user.js",
+    "backup": "node --disable-warning=ExperimentalWarning scripts/backup.js",
+    "flow-lab": "node --disable-warning=ExperimentalWarning src/flow-lab/cli.js",
+    "test": "node --disable-warning=ExperimentalWarning --test --test-concurrency=1 tests/*.test.js",
+    "secret-scan": "node scripts/secret-scan.js --tracked",
+    "secret-scan:staged": "node scripts/secret-scan.js --staged",
+    "setup-hooks": "git config core.hooksPath .githooks"
+  },
+  "license": "UNLICENSED"
+}
