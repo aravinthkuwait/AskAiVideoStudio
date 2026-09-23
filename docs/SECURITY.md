@@ -17,6 +17,7 @@
 | Logging | Structured JSON with automatic redaction of password/secret/token/cookie/session/api_key/authorization keys and token-like values. 5 MB rotation × 5 files, stored in `PRIVATE_STORAGE_ROOT/logs` |
 | Audit | `audit_log` records security-relevant actions with redacted metadata |
 | Headers | CSP, X-Frame-Options, Referrer-Policy no-referrer, COOP, CORP, Permissions-Policy, HSTS when secure |
+| Browser profiles | `browser-profiles/<tenant-id>/<profile-id>/` with opaque ids only (never emails), mode 0700, inside the private root, never in Git. The CDP control port binds to 127.0.0.1 with a random port. Lab profiles are temporary and always deleted |
 | Google | No Google passwords are ever stored. Flow automation is hard-disabled. Future logins are interactive; CAPTCHA/MFA pauses for the user and is never bypassed; accounts are never auto-rotated |
 
 ## Public repository protections

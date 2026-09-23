@@ -58,20 +58,21 @@ export async function render(main) {
   // Flow Feasibility Lab
   const labBox = h('div');
   const paintLab = (r) => mount(labBox, r ? h('div', null,
-    h('p', { class: 'muted' }, `Last run ${fmtDate(r.ranAt)} · credits consumed: ${r.creditsConsumed ? 'YES' : 'no'} · production automation: disabled`),
+    h('p', { class: 'muted' }, `Last run ${fmtDate(r.ranAt)} · ${r.environment?.mode || ''} · credits consumed: ${r.creditsConsumed ? 'YES' : 'no'} · production automation: disabled`),
+    r.stageA ? h('div', { class: `notice ${r.stageA === 'READY FOR MANUAL LOGIN' ? 'info' : ''}`, style: { marginBottom: '10px' } }, `Stage A: ${r.stageA}${r.blockingItems?.length ? ` — blocking: ${r.blockingItems.join(', ')}` : ''}`) : null,
     h('div', { class: 'table-wrap' }, h('table', { class: 't' }, h('thead', null, h('tr', null, h('th', null, 'Check'), h('th', null, 'Status'), h('th', null, 'Detail'))),
       h('tbody', null, r.items.map((i) => h('tr', null, h('td', null, i.label), h('td', null, badge(i.status.replace(/ /g, '-'), i.status)), h('td', { class: 'muted' }, i.detail)))))))
     : h('p', { class: 'muted' }, 'No lab report yet.'));
-  const runLab = async (checkReachability) => {
-    try { const r = await api.post('/api/flow-lab/run', { checkReachability }); paintLab(r.report); toast('Lab checks finished.', 'ok'); }
+  const runLab = async (checkFlowNavigation) => {
+    try { const r = await api.post('/api/flow-lab/run', { checkFlowNavigation }); paintLab(r.report); toast('Lab checks finished.', 'ok'); }
     catch (e) { toast(e.message, 'err'); }
   };
   sections.append(h('section', { class: 'card' }, h('h2', null, 'Flow Feasibility Lab'),
     h('div', { class: 'notice info', style: { marginBottom: '12px' } }, 'Isolated from production. Safe checks never sign in, never open a Flow project and never consume Google credits. Any test that could consume credits will ask for explicit approval first and is not available in Phase 1.'),
     h('div', { class: 'row', style: { marginBottom: '12px' } },
       btn('Run safe checks', () => runLab(false), { kind: 'primary', icon: 'lab' }),
-      btn('Also check network reachability', async () => {
-        if (await confirmDialog('Check reachability?', 'Makes ONE unauthenticated HTTPS request to the public Google Flow address. No login, no cookies, no credits.', { confirmLabel: 'Run check' })) runLab(true);
+      btn('Also load the Flow page (not signed in)', async () => {
+        if (await confirmDialog('Load the Google Flow page?', 'Opens the public Google Flow address ONCE in a temporary, empty browser profile. Nothing is typed, nobody signs in, nothing is captured and no credits are used. The profile is deleted afterwards.', { confirmLabel: 'Run check' })) runLab(true);
       }, { kind: 'ghost' })),
     labBox));
   paintLab((await api.get('/api/flow-lab')).report);

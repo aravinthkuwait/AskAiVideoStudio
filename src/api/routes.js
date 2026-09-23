@@ -165,10 +165,10 @@ export function registerRoutes(router, deps) {
   router.post('/api/flow-lab/run', async (req, c) => {
     if (!isAdmin(c)) throw forbidden();
     if (!labLimiter.hit(c.tenantId)) throw tooMany();
-    const { checkReachability } = await body(req);
-    const report = await runSafeChecks(deps.config, { checkReachability: checkReachability === true });
+    const { checkFlowNavigation } = await body(req);
+    const report = await runSafeChecks(deps.config, { checkFlowNavigation: checkFlowNavigation === true });
     saveReport(deps.config, report);
-    audit(db, c, 'flowlab.run', null, null, { reachability: checkReachability === true });
+    audit(db, c, 'flowlab.run', null, null, { flowNavigation: checkFlowNavigation === true, stageA: report.stageA });
     return { report, productionAutomationEnabled: false };
   });
   router.get('/api/flow-accounts', (req, c) => ({

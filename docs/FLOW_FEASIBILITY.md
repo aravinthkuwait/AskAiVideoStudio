@@ -1,45 +1,79 @@
-# Flow Feasibility Lab
+# Flow Feasibility — Phase 2 Stage A
 
-The lab is **isolated** from the production pipeline (`src/flow-lab/`, Settings → Flow Feasibility Lab, or `npm run flow-lab`). Its safe checks never sign in, never open a Flow project, never submit prompts and **never consume Google credits**. Production Flow automation is hard-disabled in Phase 1 (`flowAutomationEnabled: false`, and the provider reports itself unavailable).
+Phase 2 rule: **VERIFY FIRST, AUTOMATE SECOND.** Stage B (Flow automation) must not begin until Stage A passes **on the intended VPS**.
 
-Status vocabulary: **VERIFIED** (actually tested here), **NOT VERIFIED**, **BLOCKED**, **REQUIRES MANUAL TEST**.
+The lab lives in `src/flow-lab/`. Run it with `npm run flow-lab`, or from Settings → Flow Feasibility Lab (admin only). It is isolated from production, and it:
+- never signs in, never types into Google pages and never submits prompts;
+- **never consumes credits**;
+- uses a temporary 0700 profile under `PRIVATE_STORAGE_ROOT/browser-profiles/_lab/`, deleted afterwards;
+- proves each mechanic against a local `127.0.0.1` test page.
 
-## Results in the Phase 1 build/test environment
+The only contact with Google is one unauthenticated page load of Flow, and only with explicit consent (`--check-flow-navigation`).
 
-These are from an ephemeral Linux x86_64 build container, not the target VPS. **Re-run `npm run flow-lab` on the VPS.** Results there may differ.
+Status vocabulary: **VERIFIED** (tested, with evidence), **NOT VERIFIED**, **BLOCKED**, **REQUIRES MANUAL TEST**.
 
-| Item | Status | Notes |
-|---|---|---|
-| Chromium/Chrome available | VERIFIED | A pre-installed Chromium was detected (read-only use) |
-| Headless launch | VERIFIED | Rendered `about:blank` in a temporary isolated profile, deleted afterwards |
-| Isolated profile directory | VERIFIED | Under `PRIVATE_STORAGE_ROOT/browser-profiles/` |
-| Headed browser / interactive login | BLOCKED | No display server. Needs a remote desktop/VNC session or a local machine |
-| Chromium sandbox | NOT VERIFIED | Environment ran as root (`--no-sandbox` required). Run the browser worker as a non-root user |
-| Google Flow host reachability | NOT VERIFIED | Optional, and only on explicit request |
-| Interactive Google login (no stored password) | REQUIRES MANUAL TEST | |
-| Authentication persistence across restarts | REQUIRES MANUAL TEST | |
-| Google Flow access | REQUIRES MANUAL TEST | |
-| Image generation workflow | REQUIRES MANUAL TEST | **May consume credits. Needs explicit approval first** |
-| Image-to-video workflow | REQUIRES MANUAL TEST | **May consume credits. Needs explicit approval first** |
-| Download | REQUIRES MANUAL TEST | |
-| Session persistence (days) | REQUIRES MANUAL TEST | |
-| Timeout behaviour | REQUIRES MANUAL TEST | |
-| Error behaviour (quota, policy, CAPTCHA/MFA pause) | REQUIRES MANUAL TEST | |
-| UI selector stability | REQUIRES MANUAL TEST | |
+## Results
 
-Nothing above is claimed as working unless it is marked VERIFIED.
+| Check | Build container (root, headless) | Build container (headed via Xvfb) | Build container (non-root) | **Intended VPS** |
+|---|---|---|---|---|
+| Chrome/Chromium executable | VERIFIED | VERIFIED | VERIFIED | NOT VERIFIED — lab not yet run on VPS |
+| Non-root execution (sandbox on) | BLOCKED (ran as root) | BLOCKED (ran as root) | VERIFIED | NOT VERIFIED |
+| Display for headed browser | BLOCKED | VERIFIED | BLOCKED | NOT VERIFIED |
+| Private profile/download dirs (0700) | VERIFIED | VERIFIED | VERIFIED | NOT VERIFIED |
+| Browser start-up, isolated profile | VERIFIED | VERIFIED | VERIFIED | NOT VERIFIED |
+| Page navigation + DOM read | VERIFIED | VERIFIED | VERIFIED | NOT VERIFIED |
+| Download into private dir (non-zero, no symlink) | VERIFIED | VERIFIED | VERIFIED | NOT VERIFIED |
+| Timeout handling | VERIFIED | VERIFIED | VERIFIED | NOT VERIFIED |
+| Clean close + restart | VERIFIED | VERIFIED | VERIFIED | NOT VERIFIED |
+| Profile persistence (cookie survives restart) | VERIFIED | VERIFIED | VERIFIED | NOT VERIFIED |
+| Flow page loads (not signed in) | BLOCKED¹ | NOT VERIFIED (not run) | NOT VERIFIED (not run) | NOT VERIFIED |
+| Manual Google login | REQUIRES MANUAL TEST | — | — | REQUIRES MANUAL TEST |
+| Google session persistence | REQUIRES MANUAL TEST | — | — | REQUIRES MANUAL TEST |
+| Flow usable when signed in | REQUIRES MANUAL TEST | — | — | REQUIRES MANUAL TEST |
+| Image / image-to-video workflow | REQUIRES MANUAL TEST (credits) | — | — | REQUIRES MANUAL TEST (credits) |
+| Flow result download, selectors, error behaviour | REQUIRES MANUAL TEST | — | — | REQUIRES MANUAL TEST |
 
-## Rules for the future Flow adapter
+¹ The build container's outbound network policy blocked the connection (`ERR_TUNNEL_CONNECTION_FAILED`). This says nothing about Google or the VPS.
 
-- Runs in a separate browser-worker process. A Flow failure must never take down the app.
-- One isolated profile per account in private storage. **Never** stores Google passwords, and never commits profiles, cookies or screenshots of private account data.
-- Login is Google's normal interactive flow. On CAPTCHA/MFA/verification: **PAUSE** and let the user complete it. Never bypass.
-- If the current account cannot continue: pause and show **CURRENT FLOW ACCOUNT CANNOT CONTINUE**. The user selects another signed-in account and presses **SWITCH & RESUME**. No automatic rotation to bypass limits.
-- Any action that may consume credits requires explicit confirmation (`confirmCredits`, already enforced by the job API for credit-consuming providers).
+The build container is Ubuntu 24.04 x86_64 with Chromium 141. These results prove that the **browser-worker mechanics** work, and that the proposed display approach (Xvfb) and non-root execution work on that platform. They are **not** VPS results.
 
-## Suggested manual validation sequence (Phase 2, with your approval)
+**Stage A status: NOT PASSED** — the lab has not yet been run on the VPS, and a display is required for manual login.
 
-1. Run the lab on the VPS. Provide a display (VNC/remote desktop) for the browser worker, running as a non-root user.
-2. Sign in manually once in an isolated profile, then restart and check persistence.
-3. Open Flow **without generating** and record the selectors.
-4. Only after explicit approval: run one image generation and one image-to-video generation, then verify download.
+## Running Stage A on the VPS
+
+From the app checkout, as the user that will run the app, with `.env` pointing `PRIVATE_STORAGE_ROOT` at the private runtime:
+
+```bash
+npm run flow-lab                              # safe mechanics, no Google contact
+npm run flow-lab -- --check-flow-navigation   # + one unauthenticated Flow page load (consent)
+```
+
+Exit code 0 means `Stage A: READY FOR MANUAL LOGIN`, and 2 means not passed; blocking items are listed. The report is saved privately at `PRIVATE_STORAGE_ROOT/flow-lab/latest-report.json` (never in Git).
+
+## RISK APPROVAL REQUIRED — display for manual Google login
+
+- **Required component:** a display that a visible Chromium window can use, plus a way for you to see and type into it. Optionally, a dedicated non-root OS user for the browser worker.
+- **Reason:** Google sign-in (email, password, MFA, CAPTCHA, verification) must be done **by you**, in a normal visible browser, in the dedicated profile. Headless browsers are frequently refused by Google sign-in, and ASK Studio must never handle the password.
+- **Proposed isolated solution (lightweight, no desktop environment):**
+  1. Install only the packages `xvfb` and `x11vnc` (Ubuntu). No desktop environment, no window manager, no config changes to existing services.
+  2. When a login is needed, start `Xvfb :99 -nolisten tcp` and `x11vnc -display :99 -localhost -rfbauth <private-runtime>/config/vnc.pass -once`, **as the app user**, only for the duration of the login.
+  3. Chromium opens the dedicated profile on `:99`. From your PC you run `ssh -L 5999:127.0.0.1:5900 <vps>` and connect a VNC viewer to `127.0.0.1:5999`, then sign in with Google yourself.
+  4. Close the browser. Xvfb and x11vnc stop. Nothing stays running.
+  5. Recommended: create a dedicated non-root user (e.g. `aavs`) to own the app and the private runtime, so Chromium runs with its sandbox enabled.
+- **Server components affected:** two new apt packages; optionally one new OS user. Existing services, the reverse proxy, the firewall, SSH configuration and ports are **not touched**. VNC listens on localhost only and is reached through your existing SSH access.
+- **Security implications:** anyone with shell access as the app user could view the virtual display while it runs; VNC uses a password stored in the private runtime and is never exposed publicly; the Google profile (cookies) lives in `PRIVATE_STORAGE_ROOT/browser-profiles/<tenant>/<profile>/` with mode 0700.
+- **Rollback:** `sudo apt remove xvfb x11vnc`, then `sudo userdel -r aavs` if created, then delete the profile directory.
+- **Alternatives:**
+  - (a) SSH X11 forwarding (`ssh -X`). Needs `xauth` on the server and an X server on your PC; slower, but no VNC.
+  - (b) Headless Chromium with DevTools remote screencast over an SSH tunnel. Nothing to install, but Google may refuse sign-in in headless mode.
+  - (c) Keep Flow on your own PC and import images/videos into the studio (External workflow, already working).
+
+**Nothing in this section has been done on the VPS. It waits for your approval.**
+
+## Rules for the future Flow adapter (Stage B, after Stage A passes)
+
+- A separate browser-worker process, using the CDP launcher in `src/browser/cdp.js`. A Flow failure never takes down the app.
+- One profile per Flow account at `browser-profiles/<tenant-id>/<profile-id>/` (opaque ids only, 0700, never in Git). **No Google passwords stored.**
+- CAPTCHA/MFA/verification → **PAUSE** for the user. Never bypass.
+- The account can't continue → pause the queue; you select another account; resume. **No automatic rotation.**
+- Every credit-consuming action needs explicit approval. The first real test is ONE scene only.

@@ -38,6 +38,18 @@ export class Storage {
   pathForKey(key) { return this.resolve(...key.split('/')); }
 
   /**
+   * Private browser profile directory: browser-profiles/<tenant-id>/<profile-id>/.
+   * Opaque ids only (never an email address), mode 0700.
+   */
+  browserProfileDir(tenantId, profileId) {
+    if (!isId(tenantId) || !isId(profileId)) throw new AppError(400, 'BAD_PATH', 'Invalid profile path.');
+    const dir = this.resolve('browser-profiles', tenantId, profileId);
+    fs.mkdirSync(path.dirname(dir), { recursive: true, mode: 0o700 });
+    fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+    return dir;
+  }
+
+  /**
    * Stream a request body to a temp file with a hard size limit, returning
    * { tempPath, bytes, sha256, head } where head is the first 64 bytes for sniffing.
    */

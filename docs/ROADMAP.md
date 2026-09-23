@@ -6,7 +6,12 @@ Read-only discovery, isolated workspace, public/private separation.
 ## Phase 1 — Secure production foundation ✅
 Auth, multi-tenant data model, projects, Master Script importer, Scene Manager, Character/Asset libraries, multi-source images with approval protection, background jobs with pause/resume/retry/recovery, Flow Feasibility Lab, diagnostics, storage dashboard, backups, secret scanning, tests.
 
-## Phase 2 — Google Flow image workflow (recommended next)
+## Phase 2 — Google Flow image → video (in progress)
+
+**Stage A (feasibility):** lab built and verified in the build container; **pending on the VPS** and on approval of the display solution (see FLOW_FEASIBILITY.md).
+**Stage B (automation):** not started — gated on Stage A.
+
+Original plan:
 1. Run the Flow Lab on the target VPS. Set up a display for headed login and a non-root browser user.
 2. Manual login and persistence validation (no credits).
 3. Browser-worker process plus the `GOOGLE_FLOW` ImageProvider adapter with CAPTCHA/MFA pause.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0-stageA — Phase 2, Stage A (feasibility only)
+
+- `src/browser/cdp.js`: dependency-free Chrome DevTools Protocol launcher/client (localhost-only control port, explicit private profile, graceful close)
+- Flow Feasibility Lab rewritten with evidence-based checks: non-root, display, 0700 private dirs, start-up, navigation, download into the private dir, timeout recovery, clean restart, profile persistence, and an opt-in unauthenticated Flow page load
+- `Storage.browserProfileDir(tenant, profile)`: opaque-id, 0700 profile layout
+- Lab cleanup is guaranteed even when a check fails
+- Stage B (Flow automation) NOT started: gated on VPS Stage A results and display approval
+
 ## 0.1.0 — Phase 1 foundation
 
 - Secure Node.js backend with zero runtime dependencies (node:sqlite, scrypt, node:test)

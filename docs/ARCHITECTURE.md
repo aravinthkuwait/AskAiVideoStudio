@@ -13,7 +13,8 @@ Mobile browser  ─┤  HTTPS (reverse proxy, recommended)
         ├── Job queue       jobs + generation_runs tables (persistent, checkpointed)
         ├── Worker          src/jobs/worker.js — embedded or `npm run worker`
         ├── Providers       src/providers/ — ImageProvider / VideoProvider / VoiceProvider adapters
-        ├── Browser worker  (future) Google Flow adapter in its own process
+        ├── Browser control src/browser/cdp.js — built-in CDP launcher (used by the Flow Lab; future browser worker)
+        ├── Browser worker  (future, Stage B) Google Flow adapter in its own process
         └── Render worker   (future) FFmpeg export
 ```
 
